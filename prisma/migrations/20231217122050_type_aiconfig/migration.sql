@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `AIConfig` ADD COLUMN `type` VARCHAR(191) NOT NULL DEFAULT 'G';

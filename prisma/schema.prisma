@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @unique
+  username       String
+  email          String          @unique
+  admin          Boolean         @default(false)
+  auth_session   Session[]
+  key            Key[]
+  ai_config      AIConfig[]
+  whatsappClient WhatsappClient?
+  Produto        Produto[]
+}
+
+model Session {
+  id             String @id @unique
+  user_id        String
+  active_expires BigInt
+  idle_expires   BigInt
+  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Key {
+  id              String  @id @unique
+  hashed_password String?
+  user_id         String
+  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+// banco AI config 
+
+model AIConfig {
+  id                String             @id @default(uuid())
+  user              User               @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  user_id           String
+  name              String
+  sistema           String             @db.VarChar(3000)
+  faq               String             @db.VarChar(3000)
+  max_tokens        Int
+  model             String
+  temperature       Float
+  stop              String
+  top_p             Float
+  frequency_penalty Float
+  presence_penalty  Float
+  type              String             @default("G") // G = Geral | V = Vendas | S = Suporte | SI = Suorte Interno | SE = Suporte Externo | R = Restaurante
+  files             File[]
+  WhatsappClient    WhatsappClient?
+  produtos          Produto[]
+  session_whatsapp  Session_whatsapp[]
+
+  @@index([type])
+}
+
+model Session_whatsapp {
+  id                 String          @id @default(uuid())
+  client_id          String
+  ia_config_id       String
+  init               DateTime        @default(now())
+  end                DateTime?
+  whatsapp_client_id Int?
+  messages           Message[]
+  ai_config          AIConfig        @relation(references: [id], fields: [ia_config_id], onDelete: Cascade)
+  client             Client?         @relation(fields: [client_id], references: [id])
+  whatsapp_client    WhatsappClient? @relation(fields: [whatsapp_client_id], references: [id])
+
+  @@index([client_id])
+}
+
+model Message {
+  id                  String           @id @default(uuid())
+  session_whatsapp_id String
+  message             String
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  session_whatsapp    Session_whatsapp @relation(references: [id], fields: [session_whatsapp_id], onDelete: Cascade)
+
+  @@index([session_whatsapp_id])
+}
+
+model Client {
+  id               String             @id @default(uuid())
+  name             String?
+  email            String?            @unique
+  phone            String             @unique
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  session_whatsapp Session_whatsapp[]
+
+  @@index([phone])
+}
+
+model File {
+  id           String   @id @default(uuid())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  name         String
+  url          String
+  ai_config    AIConfig @relation(references: [id], fields: [ai_config_id], onDelete: Cascade)
+  ai_config_id String
+}
+
+model WhatsappClient {
+  id               Int                @id @default(autoincrement())
+  name             String?
+  active           Boolean            @default(true)
+  qrCode           String?            @db.MediumText()
+  ready            Boolean            @default(false)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  user_id          String             @unique
+  user             User               @relation(references: [id], fields: [user_id])
+  ai_config        AIConfig?          @relation(fields: [ai_config_id], references: [id])
+  ai_config_id     String?            @unique
+  session_whatsapp Session_whatsapp[]
+}
+
+model Produto {
+  id           Int       @id @default(autoincrement())
+  name         String
+  price        Float
+  description  String
+  link         String
+  group        Group[]
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  user_id      String
+  user         User      @relation(references: [id], fields: [user_id])
+  ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
+  ai_config_id String?
+}
+
+model Group {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  produto Produto[]
+}
