@@ -8,7 +8,7 @@ export default async function RootLayout({
 }) {
   return (
     <main style={{
-      backgroundImage: "/background.png",
+      backgroundImage: "url('/background.png')",
       backgroundAttachment: "fixed",
     }}>
       {/* Top nav */}

@@ -13,7 +13,7 @@ export default function HomeTopNav() {
       <div className='flex flex-row justify-between items-center w-11/12 lg:w-2/3'>
         <Link href="/">
           <div className="h-[66px] md:w-[250px] w-[100px]" style={{
-            backgroundImage: "url('https://cdn.discordapp.com/attachments/1048010244795678771/1169737777072590969/AIPEX_LOGO_light.png?ex=65567e32&is=65440932&hm=c5661bf76a5eefe78815e6821382ada234a600cf63469015c12599c68a586890&')",
+            backgroundImage: "url(/logo_black.png)",
             backgroundSize: "contain",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",

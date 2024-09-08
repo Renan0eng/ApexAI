@@ -47,7 +47,7 @@ export function SideNav({ children }: { children: React.ReactNode }) {
         <div className="bg-primary-500">
           <div className="bg-white rounded-br-[32px] border-r-8 border-primary-500">
             <div className="h-[100px]" style={{
-              backgroundImage: "url('https://cdn.discordapp.com/attachments/1048010244795678771/1169737777072590969/AIPEX_LOGO_light.png?ex=65567e32&is=65440932&hm=c5661bf76a5eefe78815e6821382ada234a600cf63469015c12599c68a586890&')",
+              backgroundImage: "url(logo_black.png)",
               backgroundSize: "contain",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
