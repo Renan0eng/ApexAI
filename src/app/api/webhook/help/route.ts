@@ -1,6 +1,5 @@
-import { generateAiResponse } from "@/lib/ai/chat";
+import { AIConfig, generateAiResponse } from "@/lib/ai/chat";
 import { getProdutoByGrupOrName } from "@/model/produto";
-import { AIConfig } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
@@ -8,6 +7,7 @@ type Messages = {
   date: string;
   body: string;
   type: string;
+  // notifyName: string;
 }[];
 
 const sendMessage = async (
@@ -32,8 +32,9 @@ const sendMessage = async (
       "Você é um atendente virtual, aqui estão os dados da empresa que você vai atender os clientes " +
       ai_config.sistema +
       ".\n\n" +
+      ai_config.faq +
       new Date().toLocaleTimeString() +
-      " este é o horaro atual. priorize informações chave, economize tokens, envie emojis. Não responda perguntas fora do escopo comercial da empresa.",
+      " este é o horario atual. priorize informações chave, economize tokens, envie emojis. Não responda perguntas fora do escopo comercial da empresa.",
     role: "system",
   });
 
@@ -71,11 +72,11 @@ const sendMessage = async (
 export async function POST(req: NextRequest) {
   const { messages, ai_config } = await req.json();
 
-  console.log("messages", messages);
+  // console.log("messages", messages);
 
   const message = await sendMessage(messages, ai_config);
 
-  console.log("message", message);
+  // console.log("message", message);
 
   if (message instanceof Object && "error" in message) {
     return NextResponse.json({ error: message.error });

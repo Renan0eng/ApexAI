@@ -39,66 +39,51 @@ export async function getProdutoByGrupOrName(
   let ret = [];
   const editGroup = group?.split(" ");
   const editName = name?.split(" ");
+
+  // Consulta sem filtros específicos
   if (!group && !name) {
     ret = await prisma.produto.findMany({
-      where: {
-        ai_config_id: aiConfig.id,
-      },
+      where: { ai_config_id: aiConfig.id },
     });
     if (ret.length) return ret;
 
-    return `Pergunte ao cliente qual o grupo ou nome do produto que ele deseja, estes são os nossos grupos de produtos: ${(
-      await prisma.group.findMany({
-        where: {
-          produto: {
-            some: {
-              ai_config_id: aiConfig.id,
-            },
-          },
-        },
-      })
-    )
+    const grupos = await prisma.group.findMany({
+      where: {
+        produto: { some: { ai_config_id: aiConfig.id } },
+      },
+      select: { name: true },
+    });
+
+    return `Pergunte ao cliente qual o grupo ou nome do produto que ele deseja. Estes são os nossos grupos de produtos: ${grupos
       .map((item) => item.name)
       .join(", ")}`;
   }
+
+  // Busca por nome
   if (!group) {
-    console.log("name", name);
     ret = await prisma.produto.findMany({
       where: {
         OR: editName?.map((item) => ({
-          name: {
-            contains: `${item}`,
-          },
+          name: { contains: item }, // Busca case-insensitive no nome
         })),
         ai_config_id: aiConfig.id,
       },
     });
     if (ret.length) return ret;
 
-    return `Não encontramos nenhum produto para vc estes são os nossos grupos de produtos: ${(
-      await prisma.group.findMany({
-        where: {
-          produto: {
-            some: {
-              ai_config_id: aiConfig.id,
-            },
-          },
-        },
-      })
-    )
-      .map((item) => item.name)
-      .join(", ")}`;
+    return `Nenhum produto encontrado. Aqui estão os nossos grupos de produtos: ${await listarGrupos(
+      aiConfig
+    )}`;
   }
+
+  // Busca por grupo
   if (!name) {
-    console.log("editGroup", editGroup);
     ret = await prisma.produto.findMany({
       where: {
         group: {
           some: {
             OR: editGroup?.map((item) => ({
-              name: {
-                contains: `${item}`,
-              },
+              name: { contains: item }, // Sem o uso de `mode` aqui, já que estamos filtrando grupos
             })),
           },
         },
@@ -107,36 +92,24 @@ export async function getProdutoByGrupOrName(
     });
     if (ret.length) return ret;
 
-    return `Não encontramos nenhum produto para vc estes são os nossos grupos de produtos: ${(
-      await prisma.group.findMany({
-        where: {
-          produto: {
-            some: {
-              ai_config_id: aiConfig.id,
-            },
-          },
-        },
-      })
-    )
-      .map((item) => item.name)
-      .join(", ")}`;
+    return `Nenhum produto encontrado no grupo. Aqui estão os nossos grupos de produtos: ${await listarGrupos(
+      aiConfig
+    )}`;
   }
+
+  // Busca combinada por grupo e nome
   ret = await prisma.produto.findMany({
     where: {
       OR: [
         {
           group: {
             some: {
-              name: {
-                in: editGroup,
-              },
+              name: { in: editGroup }, // Busca por nome de grupo
             },
           },
         },
         {
-          name: {
-            contains: `_${name}_`,
-          },
+          name: { contains: name }, // Busca por nome do produto case-insensitive
         },
       ],
       ai_config_id: aiConfig.id,
@@ -145,17 +118,18 @@ export async function getProdutoByGrupOrName(
 
   if (ret.length) return ret;
 
-  return `Não encontramos nenhum produto para vc estes são os nossos grupos de produtos: ${(
-    await prisma.group.findMany({
-      where: {
-        produto: {
-          some: {
-            ai_config_id: aiConfig.id,
-          },
-        },
-      },
-    })
-  )
-    .map((item) => item.name)
-    .join(", ")}`;
+  return `Nenhum produto encontrado para esse nome ou grupo. Estes são os nossos grupos de produtos: ${await listarGrupos(
+    aiConfig
+  )}`;
+}
+
+// Função auxiliar para listar os grupos
+async function listarGrupos(aiConfig: AIConfig) {
+  const grupos = await prisma.group.findMany({
+    where: {
+      produto: { some: { ai_config_id: aiConfig.id } },
+    },
+    select: { name: true },
+  });
+  return grupos.map((item) => item.name).join(", ");
 }

@@ -150,7 +150,7 @@ export async function getAiConfigByType(
     // busca o typo help
     where: {
       type: {
-        equals: "help",
+        contains: "help",
       },
     },
   });

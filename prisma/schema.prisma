@@ -61,6 +61,8 @@ model AIConfig {
   WhatsappClient    WhatsappClient?
   produtos          Produto[]
   session_whatsapp  Session_whatsapp[]
+  vendas            Venda[]
+  clientes          Cliente[]
 
   @@index([type])
 }
@@ -141,10 +143,38 @@ model Produto {
   user         User      @relation(references: [id], fields: [user_id])
   ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
   ai_config_id String?
+  vendas       Venda[]
 }
 
 model Group {
   id      Int       @id @default(autoincrement())
   name    String    @unique
   produto Produto[]
+}
+
+model Venda {
+  id           String    @id @default(uuid())
+  cliente_id   String
+  quantidade   Int
+  valor        Float
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
+  cliente      Cliente?  @relation(fields: [cliente_id], references: [id])
+  produtos     Produto[]
+  ai_config_id String?
+}
+
+model Cliente {
+  id           String    @id @default(uuid())
+  name         String
+  email        String?
+  phone        String
+  endereco     String
+  cpf          String    @unique
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
+  ai_config_id String
+  conpras      Venda[]
 }

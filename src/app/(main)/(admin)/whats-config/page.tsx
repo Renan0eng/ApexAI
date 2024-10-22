@@ -33,6 +33,7 @@ export default function AiConfig() {
   const [qrCode, setQrCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [ready, setReady] = useState(false);
+  const [active, setActive] = useState(false);
   const [aiConfigs, setAiConfigs] = useState<Prisma.AIConfigGetPayload<{}>[]>();
 
   const {
@@ -59,14 +60,16 @@ export default function AiConfig() {
         return;
       }
 
+      console.log("Data: ", res.data);
+
       setReady(res.data.ready);
       setQrCode(res.data.qrCode);
+      setActive(res.data.active);
       setLoading(false);
     }, 5000);
 
     const fetchAiConfigs = async () => {
       const res = await axios.get("/api/ai-config");
-      console.log(res.data);
 
       setAiConfigs(res.data)
     }
@@ -77,7 +80,7 @@ export default function AiConfig() {
       const whatsappConfig: WhatsappClientData = data.whatsappConfig;
 
       if (whatsappConfig) {
-        console.log(whatsappConfig);
+        // console.log(whatsappConfig);
 
         setValue("name", whatsappConfig.name ?? "");
         setValue("configId", whatsappConfig.ai_config?.id ?? "");
@@ -88,6 +91,16 @@ export default function AiConfig() {
     fetchClient();
     return () => clearInterval(interval);
   }, [setValue]);
+
+  const handleDelete = async () => {
+    await axios.delete("/api/whatsapp/client");
+  };
+
+  const handleDisable = async () => {
+    await axios.put("/api/whatsapp/client", {
+      active: active ? false : true,
+    });
+  }
 
   return (
     <main>
@@ -166,6 +179,20 @@ export default function AiConfig() {
             className="w-full bg-primary-500 hover:bg-secondary-500"
           >
             Cadastrar
+          </Button>
+          <Button
+            onClick={handleDelete}
+            disabled={aiConfigs?.length === 0}
+            className={`w-full ${ready ? "bg-red-500 hover:bg-red-700" : "bg-primary-500 hover:bg-secondary-500"}`}
+          >
+            Desconectar
+          </Button>
+          <Button
+            onClick={handleDisable}
+            disabled={aiConfigs?.length === 0}
+            className={`w-full ${active ? "bg-red-500 hover:bg-red-700" : "bg-primary-500 hover:bg-secondary-500"}`}
+          >
+            {active ? "Desativar" : "Ativar"}
           </Button>
         </div>
       </form>

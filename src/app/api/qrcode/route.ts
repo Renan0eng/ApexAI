@@ -7,8 +7,7 @@ export async function GET(req: NextRequest) {
   const session = await getServerSideSession();
 
   if (!session) {
-    return NextResponse.json({
-    }, { status: 401 });
+    return NextResponse.json({}, { status: 401 });
   }
 
   let whatsappClient = await prisma.whatsappClient.findFirst({
@@ -27,6 +26,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       qrCode: whatsappClient.qrCode,
       ready: whatsappClient.ready,
+      active: whatsappClient.active,
     });
   }
 

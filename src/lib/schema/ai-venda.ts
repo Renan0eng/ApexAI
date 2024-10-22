@@ -36,7 +36,7 @@ export const createAiVendaSchema = z.object({
       name: z.string(),
       price: z.number(),
       description: z.string(),
-      link: z.string(),
+      link: z.optional(z.string()),
       group: z.string(),
     })
   ),
