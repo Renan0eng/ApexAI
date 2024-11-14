@@ -15,8 +15,8 @@ import { PiPaperclip } from "react-icons/pi";
 import { MdOutlineInsertEmoticon } from "react-icons/md";
 
 import { Textarea } from "./ui/textarea";
-import { AIConfig } from "@prisma/client";
 import axios from "axios";
+import { AIConfig } from "@/lib/ai/chat";
 
 const FloatDiv = cva(
   "bg-[#f4f4f4] rounded-[32px] fixed md:bottom-16 bottom-4 md:right-16 right-4 shadow  max-w-[calc(100vw-32px)] max-h-[calc(100vh-16px)] transition-all duration-300 ease-in-out z-50 ",
@@ -102,6 +102,8 @@ type Messages = {
 }[]
 
 const formatMessage = (message: string) => {
+
+  if (!message) return ""
 
   // formata de .md para html
   message = message.replace(/(?:\r\n|\r|\n)/g, '<br>')

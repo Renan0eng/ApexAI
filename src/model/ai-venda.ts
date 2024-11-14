@@ -133,12 +133,17 @@ export async function updateAiVenda(
         create: data.files,
       },
     },
+    include: {
+      produtos: true,
+    },
   });
 
-  await prisma.produto.deleteMany({
-    where: {
-      ai_config_id: ret.id,
-    },
+  ret.produtos.map(async (prod) => {
+    await prisma.produto.deleteMany({
+      where: {
+        id: prod.id,
+      },
+    });
   });
 
   data.produto.map(async (item) => {

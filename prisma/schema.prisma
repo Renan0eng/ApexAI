@@ -131,19 +131,19 @@ model WhatsappClient {
 }
 
 model Produto {
-  id           Int       @id @default(autoincrement())
+  id           Int             @id @default(autoincrement())
   name         String
   price        Float
   description  String
   link         String
   group        Group[]
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
   user_id      String
-  user         User      @relation(references: [id], fields: [user_id])
-  ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
+  user         User            @relation(references: [id], fields: [user_id])
+  ai_config    AIConfig?       @relation(fields: [ai_config_id], references: [id])
   ai_config_id String?
-  vendas       Venda[]
+  vendas       Produto_Venda[]
 }
 
 model Group {
@@ -153,16 +153,29 @@ model Group {
 }
 
 model Venda {
-  id           String    @id @default(uuid())
+  id           String          @id @default(uuid())
   cliente_id   String
   quantidade   Int
   valor        Float
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
-  cliente      Cliente?  @relation(fields: [cliente_id], references: [id])
-  produtos     Produto[]
+  confirmado   Boolean         @default(false)
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
+  ai_config    AIConfig?       @relation(fields: [ai_config_id], references: [id])
+  cliente      Cliente?        @relation(fields: [cliente_id], references: [id])
+  produtos     Produto_Venda[]
   ai_config_id String?
+}
+
+model Produto_Venda {
+  id         Int      @id @default(autoincrement())
+  produto    Produto  @relation(fields: [produto_id], references: [id])
+  venda      Venda    @relation(fields: [venda_id], references: [id])
+  quantidade Int
+  valor      Float
+  produto_id Int
+  venda_id   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model Cliente {
@@ -176,5 +189,5 @@ model Cliente {
   updated_at   DateTime  @updatedAt
   ai_config    AIConfig? @relation(fields: [ai_config_id], references: [id])
   ai_config_id String
-  conpras      Venda[]
+  vendas       Venda[]
 }

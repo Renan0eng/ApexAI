@@ -4,6 +4,7 @@ import path from "path";
 import { existsSync } from "fs";
 import { mkdir, writeFile } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
+import { AIConfig as AIConfigProdutos } from "@/lib/ai/chat";
 
 export type PropsCreateAiConfig = {
   user_id: string;
@@ -145,12 +146,20 @@ export async function saveFiles(files: File[], id?: string) {
 
 export async function getAiConfigByType(
   type: string
-): Promise<AIConfig | null> {
+): Promise<AIConfigProdutos | null> {
   const aiConfg = await prisma.aIConfig.findMany({
     // busca o typo help
     where: {
       type: {
         contains: "help",
+      },
+    },
+    include: {
+      files: true,
+      produtos: {
+        include: {
+          group: true,
+        },
       },
     },
   });

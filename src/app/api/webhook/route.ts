@@ -442,34 +442,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json("Message received");
           }
 
-          if (!confirma) {
-            chat.push({
-              content:
-                "Pergunte se deve cinfirmar a compra de " +
-                quantidade +
-                " " +
-                produto +
-                "?",
-              role: "function",
-              name: "buy_product",
-            });
-
-            const newResponse = await generateAiResponse(
-              chat,
-              whatsappConfig.ai_config
-            );
-
-            await axios.post("http://localhost:8000/whatsapp/message", {
-              conversationId: messages[0].id.remote,
-              message:
-                formatForWhatsApp(newResponse.choices[0].message.content) +
-                `Tokens: ${newResponse.usage?.total_tokens}`,
-              clientId: body.clientId,
-            });
-
-            return NextResponse.json("Message received");
-          }
-
           const venda = await createVenda({
             produtos: produtos.map((produto) => ({
               id: produto.id,
@@ -477,10 +449,6 @@ export async function POST(req: NextRequest) {
             })),
             cliente_id: cliente.id,
             quantidade: quantidade,
-            valor: produtos.reduce(
-              (acc, cur) => acc + cur.price * quantidade,
-              0
-            ),
             ai_config_id: whatsappConfig.ai_config.id,
           });
 
@@ -511,7 +479,7 @@ export async function POST(req: NextRequest) {
             content: `Fornessa os dados ao cliente, código da venda: ${
               venda.id
             }, Produto: ${venda.produtos
-              .map((produto) => produto.name)
+              .map((produtoVenda) => produtoVenda.produto.name)
               .join(", ")}, Cliente: ${venda.cliente_id}, Quantidade: ${
               venda.quantidade
             }, Valor: ${venda.valor}`,

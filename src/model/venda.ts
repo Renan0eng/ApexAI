@@ -1,30 +1,54 @@
 import prisma from "@/lib/db";
-import { Client, Venda } from "@prisma/client";
+import { Client, Produto, Venda } from "@prisma/client";
 
 type PropsCreateVenda = {
   produtos: { id: number; quantidade: number }[];
   cliente_id: string;
   quantidade: number;
-  valor: number;
   ai_config_id: string | null;
 };
 
 // cria uma venda
 export async function createVenda(venda: PropsCreateVenda) {
+  const produtos = await Promise.all(
+    venda.produtos.map(async ({ id, quantidade }) => {
+      const produto = await prisma.produto.findFirst({
+        where: {
+          id: id,
+        },
+      });
+
+      // Retorna o produto com a quantidade ou apenas o produto, dependendo da necessidade
+      return { ...produto, quantidade }; // Incluindo a quantidade se necessário
+    })
+  );
+
   const ret = await prisma.venda.create({
     data: {
       cliente_id: venda.cliente_id,
       quantidade: venda.quantidade,
-      valor: venda.valor,
+      valor: produtos.reduce(
+        (acc, cur) => acc + (cur.price || 0) * cur.quantidade,
+        0
+      ),
       ai_config_id: venda.ai_config_id,
       produtos: {
-        connect: venda.produtos.map((item) => ({
-          id: item.id, // Assumindo que 'id' é o identificador do produto
+        create: venda.produtos.map((produto) => ({
+          produto_id: produto.id,
+          quantidade: produto.quantidade,
+          valor: produtos.reduce(
+            (acc, cur) => acc + (cur.price || 0) * produto.quantidade,
+            0
+          ),
         })),
       },
     },
     include: {
-      produtos: true,
+      produtos: {
+        include: {
+          produto: true,
+        },
+      },
     },
   });
 
